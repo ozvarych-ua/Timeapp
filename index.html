@@ -1,0 +1,642 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>TimeApp</title>
+  <style>
+    :root { color-scheme: dark; }
+    * { box-sizing: border-box; }
+    html, body { height: 100%; margin: 0; font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif; }
+    body { background: #070A12; color: rgba(255,255,255,0.9); overflow-x: hidden; }
+
+    /* Ambient blobs */
+    .bg { position: fixed; inset: 0; pointer-events: none; }
+    .blob { position: absolute; filter: blur(70px); opacity: 0.18; background: white; border-radius: 999px; }
+    .b1 { width: 920px; height: 520px; left: 50%; top: -180px; transform: translateX(-50%); }
+    .b2 { width: 520px; height: 520px; right: -180px; top: 220px; }
+    .b3 { width: 620px; height: 620px; left: -220px; bottom: -220px; }
+
+    .wrap { position: relative; max-width: 1180px; margin: 0 auto; padding: 40px 24px 60px; }
+    .header { display:flex; align-items:center; justify-content:space-between; gap: 16px; margin-bottom: 18px; }
+    .brand { display:flex; align-items:center; gap: 12px; }
+    .logo { width: 40px; height: 40px; border-radius: 18px; background: rgba(255,255,255,0.10);
+      box-shadow: 0 0 0 1px rgba(255,255,255,0.08), 0 20px 80px rgba(0,0,0,0.55);
+      border: 1px solid rgba(255,255,255,0.10);
+    }
+    .title { font-size: 20px; font-weight: 700; letter-spacing: -0.01em; }
+    .subtitle { font-size: 13px; color: rgba(255,255,255,0.55); margin-top: 2px; }
+
+    .pill { font-size: 12px; padding: 6px 10px; border-radius: 999px; border: 1px solid rgba(255,255,255,0.14); background: rgba(255,255,255,0.06); color: rgba(255,255,255,0.75); }
+    .pill.ok { background: rgba(16,185,129,0.12); border-color: rgba(16,185,129,0.25); color: rgba(167,243,208,0.95); }
+    .pill.warn { background: rgba(245,158,11,0.12); border-color: rgba(245,158,11,0.25); color: rgba(253,230,138,0.95); }
+
+    .grid { display:grid; grid-template-columns: 1.4fr 0.9fr; gap: 18px; }
+    @media (max-width: 980px) { .grid { grid-template-columns: 1fr; } }
+
+    .card {
+      border-radius: 24px;
+      background: rgba(255,255,255,0.05);
+      border: 1px solid rgba(255,255,255,0.10);
+      box-shadow: 0 0 0 1px rgba(255,255,255,0.03), 0 20px 80px rgba(0,0,0,0.55);
+      padding: 14px;
+    }
+
+    .stageTop { display:flex; align-items:center; justify-content:space-between; padding: 0 6px 10px; gap: 10px; }
+    .badge { font-size: 12px; padding: 4px 10px; border-radius: 999px; background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.10); color: rgba(255,255,255,0.7); }
+    .muted { color: rgba(255,255,255,0.6); font-size: 13px; }
+
+    .stageBox { position: relative; border-radius: 18px; overflow: hidden; border: 1px solid rgba(255,255,255,0.10); background: rgba(0,0,0,0.25); }
+    .aspect { aspect-ratio: 16 / 9; width: 100%; }
+    canvas { width: 100%; height: 100%; display:block; }
+
+    .drop {
+      position:absolute; inset:0;
+      display:grid; place-items:center;
+      background: rgba(0,0,0,0.35);
+    }
+    .dropInner {
+      max-width: 520px;
+      margin: 0 18px;
+      text-align:center;
+      padding: 18px;
+      border-radius: 18px;
+      border: 1px solid rgba(255,255,255,0.12);
+      background: rgba(255,255,255,0.06);
+    }
+    .dropTitle { font-weight: 650; }
+    .dropDesc { margin-top: 6px; font-size: 13px; color: rgba(255,255,255,0.6); }
+
+    .row { display:flex; align-items:center; justify-content:space-between; gap: 10px; flex-wrap: wrap; margin-top: 12px; }
+    .btn {
+      border: 1px solid rgba(255,255,255,0.12);
+      background: rgba(255,255,255,0.08);
+      color: rgba(255,255,255,0.9);
+      padding: 10px 14px;
+      border-radius: 14px;
+      font-weight: 650;
+      cursor:pointer;
+      transition: transform 0.05s ease, background 0.15s ease;
+      user-select: none;
+    }
+    .btn:hover { background: rgba(255,255,255,0.12); }
+    .btn:active { transform: translateY(1px); }
+    .btn.ghost { background: rgba(255,255,255,0.05); color: rgba(255,255,255,0.75); }
+    .btn:disabled { opacity: 0.5; cursor: not-allowed; }
+
+    .panel { display:flex; flex-direction: column; gap: 12px; }
+    .panelCard { border-radius: 18px; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.10); padding: 14px; }
+    .panelTitle { font-size: 14px; font-weight: 750; margin-bottom: 10px; }
+    .hint { font-size: 12px; color: rgba(255,255,255,0.55); margin-top: 8px; }
+
+    .uploadBox {
+      border-radius: 16px;
+      border: 1px dashed rgba(255,255,255,0.18);
+      background: rgba(255,255,255,0.05);
+      padding: 14px;
+      text-align: center;
+      color: rgba(255,255,255,0.7);
+      cursor:pointer;
+    }
+    .uploadBox:hover { background: rgba(255,255,255,0.08); }
+
+    .pills { display:flex; flex-wrap: wrap; gap: 8px; }
+    .pillBtn {
+      border-radius: 999px;
+      padding: 9px 12px;
+      font-weight: 650;
+      border: 1px solid rgba(255,255,255,0.12);
+      background: rgba(255,255,255,0.05);
+      color: rgba(255,255,255,0.72);
+      cursor:pointer;
+    }
+    .pillBtn:hover { background: rgba(255,255,255,0.10); }
+    .pillBtn.active { background: rgba(255,255,255,0.14); color: rgba(255,255,255,0.95); border-color: rgba(255,255,255,0.18); }
+
+    .fieldRow { display:flex; align-items:center; gap: 10px; margin-top: 12px; }
+    .input {
+      width: 100%;
+      border-radius: 14px;
+      padding: 10px 12px;
+      background: rgba(0,0,0,0.30);
+      border: 1px solid rgba(255,255,255,0.12);
+      color: rgba(255,255,255,0.9);
+      outline: none;
+    }
+    .input:focus { border-color: rgba(255,255,255,0.18); }
+
+    .colorRow { display:flex; align-items:center; gap: 10px; }
+    input[type="color"] {
+      width: 44px; height: 44px; border-radius: 14px;
+      background: transparent; border: 1px solid rgba(255,255,255,0.12);
+      padding: 0; cursor:pointer;
+    }
+
+    .posGrid { display:grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
+    .posBtn {
+      height: 46px; border-radius: 14px;
+      border: 1px solid rgba(255,255,255,0.12);
+      background: rgba(255,255,255,0.05);
+      cursor:pointer;
+      transition: background 0.15s ease;
+      display:grid; place-items:center;
+    }
+    .posBtn:hover { background: rgba(255,255,255,0.10); }
+    .posBtn.active { background: rgba(255,255,255,0.14); border-color: rgba(255,255,255,0.18); }
+    .posIcon { width: 20px; height: 20px; border-radius: 8px; background: rgba(255,255,255,0.10); border: 1px solid rgba(255,255,255,0.12); }
+
+    .bar { height: 10px; border-radius: 999px; background: rgba(0,0,0,0.35); border: 1px solid rgba(255,255,255,0.12); overflow:hidden; margin-top: 10px; }
+    .bar > div { height: 100%; width: 0%; background: rgba(255,255,255,0.40); transition: width 0.15s ease; }
+
+    .tinyRow { display:flex; align-items:center; justify-content:space-between; gap: 10px; margin-top: 8px; font-size: 12px; color: rgba(255,255,255,0.58); }
+    .statusLine { font-size: 13px; color: rgba(255,255,255,0.7); }
+
+    a { color: inherit; }
+  </style>
+</head>
+<body>
+  <div class="bg">
+    <div class="blob b1"></div>
+    <div class="blob b2"></div>
+    <div class="blob b3"></div>
+  </div>
+
+  <div class="wrap">
+    <div class="header">
+      <div class="brand">
+        <div class="logo"></div>
+        <div>
+          <div class="title">TimeApp</div>
+          <div class="subtitle">Countdown video generator • 1920×1080 • WebM</div>
+        </div>
+      </div>
+      <div id="fontPill" class="pill">Proxima Nova Black: checking…</div>
+    </div>
+
+    <div class="grid">
+      <!-- Stage -->
+      <section class="card">
+        <div class="stageTop">
+          <div class="muted">Stage <span style="opacity:.5">•</span> <span class="badge">1920×1080</span></div>
+          <div class="muted" id="bgName">No background loaded</div>
+        </div>
+
+        <div class="stageBox">
+          <div class="aspect">
+            <canvas id="c" width="1920" height="1080"></canvas>
+          </div>
+
+          <div id="dropOverlay" class="drop">
+            <div class="dropInner">
+              <div class="dropTitle">Drop your background image here</div>
+              <div class="dropDesc">Or use the Upload button in the panel.</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="row">
+          <div class="statusLine">
+            Timer: <b id="timerText">05:00</b>
+            <span id="status" style="opacity:.65; margin-left:10px;"></span>
+          </div>
+          <div style="display:flex; gap:8px;">
+            <button class="btn" id="startBtn">Start</button>
+            <button class="btn ghost" id="resetBtn">Reset</button>
+          </div>
+        </div>
+      </section>
+
+      <!-- Panel -->
+      <aside class="card">
+        <div class="panel">
+          <div class="panelCard">
+            <div class="panelTitle">Background</div>
+            <input id="file" type="file" accept="image/*" style="display:none" />
+            <div class="uploadBox" id="uploadBox">Click to upload (or drag & drop on the stage)</div>
+            <div class="tinyRow">
+              <span>Fit mode: cover</span>
+              <span>Canvas: 1920×1080</span>
+            </div>
+          </div>
+
+          <div class="panelCard">
+            <div class="panelTitle">Duration</div>
+            <div class="pills">
+              <button class="pillBtn" data-min="5">5:00</button>
+              <button class="pillBtn" data-min="10">10:00</button>
+              <button class="pillBtn" data-min="15">15:00</button>
+            </div>
+
+            <div class="fieldRow">
+              <input class="input" id="customMin" type="number" min="1" max="600" value="5" />
+              <div style="font-size:13px; color:rgba(255,255,255,0.6);">minutes</div>
+              <button class="btn" id="applyCustom" style="margin-left:auto;">Apply</button>
+            </div>
+          </div>
+
+          <div class="panelCard">
+            <div class="panelTitle">Timer style</div>
+            <div class="colorRow">
+              <input type="color" id="color" value="#FFFFFF" />
+              <input class="input" id="hex" value="#FFFFFF" />
+            </div>
+            <div class="hint">Font: <span style="color:rgba(255,255,255,0.85)">Proxima Nova Black</span> (installed)</div>
+          </div>
+
+          <div class="panelCard">
+            <div class="panelTitle">Timer position</div>
+            <div class="posGrid" id="posGrid"></div>
+            <div class="hint">Safe border: <span style="color:rgba(255,255,255,0.85)">100px</span></div>
+          </div>
+
+          <div class="panelCard">
+            <div class="panelTitle">Export</div>
+            <button class="btn" id="exportBtn" style="width:100%; padding:12px 14px;">Export WebM</button>
+
+            <div class="bar"><div id="barFill"></div></div>
+            <div class="tinyRow">
+              <span id="exportLeft">Ready</span>
+              <span id="exportRight">WebM download after finish</span>
+            </div>
+            <div class="hint">
+              Export is <span style="color:rgba(255,255,255,0.85)">real-time</span>:
+              a 10:00 video takes ~10 minutes to render.
+            </div>
+          </div>
+        </div>
+      </aside>
+    </div>
+  </div>
+
+<script>
+(() => {
+  const W = 1920, H = 1080, SAFE = 100;
+
+  /** @type {HTMLCanvasElement} */
+  const canvas = document.getElementById("c");
+  const ctx = canvas.getContext("2d");
+
+  const dropOverlay = document.getElementById("dropOverlay");
+  const bgNameEl = document.getElementById("bgName");
+  const timerTextEl = document.getElementById("timerText");
+  const statusEl = document.getElementById("status");
+
+  const fileEl = document.getElementById("file");
+  const uploadBox = document.getElementById("uploadBox");
+
+  const startBtn = document.getElementById("startBtn");
+  const resetBtn = document.getElementById("resetBtn");
+
+  const colorEl = document.getElementById("color");
+  const hexEl = document.getElementById("hex");
+
+  const customMinEl = document.getElementById("customMin");
+  const applyCustomBtn = document.getElementById("applyCustom");
+
+  const exportBtn = document.getElementById("exportBtn");
+  const barFill = document.getElementById("barFill");
+  const exportLeft = document.getElementById("exportLeft");
+  const exportRight = document.getElementById("exportRight");
+
+  const fontPill = document.getElementById("fontPill");
+
+  let fontDetected = false;
+
+  let img = null;
+  let bgLoaded = false;
+
+  let anchor = "MC"; // TL,TC,TR, ML,MC,MR, BL,BC,BR
+
+  let timerColor = "#FFFFFF";
+  let durationSec = 5 * 60;
+  let remainingSec = durationSec;
+
+  let isRunning = false;
+  let exporting = false;
+  let exportElapsed = 0;
+
+  function setStatus(msg, ms=1500) {
+    statusEl.textContent = msg ? `• ${msg}` : "";
+    if (msg) setTimeout(() => { statusEl.textContent = ""; }, ms);
+  }
+
+  function clampHex(hex) {
+    let v = (hex || "").trim();
+    if (!v.startsWith("#")) v = "#" + v;
+    if (v.length === 4) v = "#" + v[1]+v[1]+v[2]+v[2]+v[3]+v[3];
+    if (!/^#[0-9a-fA-F]{6}$/.test(v)) return null;
+    return v.toUpperCase();
+  }
+
+  function formatMMSS(seconds) {
+    const s = Math.max(0, Math.floor(seconds));
+    const mm = Math.floor(s / 60);
+    const ss = s % 60;
+    return String(mm).padStart(2, "0") + ":" + String(ss).padStart(2, "0");
+  }
+
+  function getAnchorParams(code) {
+    const left = SAFE, right = W - SAFE, top = SAFE, bottom = H - SAFE;
+    const cx = W / 2, cy = H / 2;
+    switch (code) {
+      case "TL": return { x: left,  y: top,    align: "left",   baseline: "top" };
+      case "TC": return { x: cx,    y: top,    align: "center", baseline: "top" };
+      case "TR": return { x: right, y: top,    align: "right",  baseline: "top" };
+      case "ML": return { x: left,  y: cy,     align: "left",   baseline: "middle" };
+      case "MC": return { x: cx,    y: cy,     align: "center", baseline: "middle" };
+      case "MR": return { x: right, y: cy,     align: "right",  baseline: "middle" };
+      case "BL": return { x: left,  y: bottom, align: "left",   baseline: "bottom" };
+      case "BC": return { x: cx,    y: bottom, align: "center", baseline: "bottom" };
+      case "BR": return { x: right, y: bottom, align: "right",  baseline: "bottom" };
+    }
+  }
+
+  function fitCover(imgW, imgH) {
+    const scale = Math.max(W / imgW, H / imgH);
+    const drawW = imgW * scale;
+    const drawH = imgH * scale;
+    const x = (W - drawW) / 2;
+    const y = (H - drawH) / 2;
+    return { x, y, drawW, drawH };
+  }
+
+  function renderFrame(text) {
+    // background
+    ctx.clearRect(0, 0, W, H);
+
+    if (img) {
+      const { x, y, drawW, drawH } = fitCover(img.naturalWidth || img.width, img.naturalHeight || img.height);
+      ctx.drawImage(img, x, y, drawW, drawH);
+    } else {
+      const g = ctx.createLinearGradient(0, 0, W, H);
+      g.addColorStop(0, "#0B1020");
+      g.addColorStop(1, "#070A12");
+      ctx.fillStyle = g;
+      ctx.fillRect(0, 0, W, H);
+    }
+
+    // timer
+    const { x, y, align, baseline } = getAnchorParams(anchor);
+    ctx.save();
+    ctx.textAlign = align;
+    ctx.textBaseline = baseline;
+
+    const fontStack = fontDetected
+      ? `"Proxima Nova Black","Proxima Nova",system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif`
+      : `system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif`;
+
+    ctx.font = `900 180px ${fontStack}`;
+    ctx.fillStyle = timerColor;
+    ctx.fillText(text, x, y);
+    ctx.restore();
+  }
+
+  async function detectFont(name) {
+    try {
+      if (document.fonts && document.fonts.ready) await document.fonts.ready;
+      if (document.fonts && document.fonts.check) return document.fonts.check(`80px "${name}"`);
+      return false;
+    } catch { return false; }
+  }
+
+  async function initFont() {
+    fontDetected = await detectFont("Proxima Nova Black");
+    fontPill.textContent = `Proxima Nova Black: ${fontDetected ? "detected" : "not detected"}`;
+    fontPill.className = `pill ${fontDetected ? "ok" : "warn"}`;
+  }
+
+  // UI: duration pills
+  const pillBtns = Array.from(document.querySelectorAll(".pillBtn"));
+  function syncPills() {
+    pillBtns.forEach(b => {
+      const m = Number(b.dataset.min);
+      b.classList.toggle("active", durationSec === m * 60);
+    });
+  }
+  pillBtns.forEach(btn => {
+    btn.addEventListener("click", () => {
+      const m = Number(btn.dataset.min);
+      durationSec = m * 60;
+      remainingSec = durationSec;
+      customMinEl.value = String(m);
+      syncPills();
+      setStatus(`Preset set to ${m} minutes`);
+    });
+  });
+
+  applyCustomBtn.addEventListener("click", () => {
+    const mRaw = Number(customMinEl.value || 1);
+    const m = Math.max(1, Math.min(600, Math.floor(mRaw)));
+    durationSec = m * 60;
+    remainingSec = durationSec;
+    syncPills();
+    setStatus(`Custom duration set to ${m} minutes`);
+  });
+
+  // UI: color
+  colorEl.addEventListener("input", (e) => {
+    timerColor = e.target.value.toUpperCase();
+    hexEl.value = timerColor;
+  });
+
+  function commitHex() {
+    const v = clampHex(hexEl.value);
+    if (!v) {
+      setStatus("Invalid HEX color");
+      hexEl.value = timerColor;
+      return;
+    }
+    timerColor = v;
+    colorEl.value = v;
+    hexEl.value = v;
+  }
+  hexEl.addEventListener("blur", commitHex);
+  hexEl.addEventListener("keydown", (e) => { if (e.key === "Enter") commitHex(); });
+
+  // UI: position grid
+  const posGrid = document.getElementById("posGrid");
+  const codes = ["TL","TC","TR","ML","MC","MR","BL","BC","BR"];
+  function buildPos() {
+    posGrid.innerHTML = "";
+    codes.forEach(code => {
+      const btn = document.createElement("button");
+      btn.className = "posBtn" + (code === anchor ? " active" : "");
+      btn.title = code;
+      btn.innerHTML = `<div class="posIcon"></div>`;
+      btn.addEventListener("click", () => {
+        anchor = code;
+        buildPos();
+        setStatus(`Position: ${code}`);
+      });
+      posGrid.appendChild(btn);
+    });
+  }
+  buildPos();
+
+  // UI: start/pause/reset
+  startBtn.addEventListener("click", () => {
+    if (exporting) return;
+    isRunning = !isRunning;
+    startBtn.textContent = isRunning ? "Pause" : "Start";
+  });
+
+  resetBtn.addEventListener("click", () => {
+    if (exporting) return;
+    isRunning = false;
+    startBtn.textContent = "Start";
+    remainingSec = durationSec;
+  });
+
+  // Upload
+  uploadBox.addEventListener("click", () => fileEl.click());
+  fileEl.addEventListener("change", async () => {
+    const f = fileEl.files && fileEl.files[0];
+    if (!f) return;
+    await loadImage(f);
+    fileEl.value = "";
+  });
+
+  async function loadImage(file) {
+    const url = URL.createObjectURL(file);
+    const im = new Image();
+    im.crossOrigin = "anonymous";
+    im.src = url;
+    await im.decode();
+    img = im;
+    bgLoaded = true;
+    bgNameEl.textContent = file.name;
+    dropOverlay.style.display = "none";
+    setStatus("Background loaded");
+  }
+
+  // Drag/drop on stage
+  const stageBox = document.querySelector(".stageBox");
+  stageBox.addEventListener("dragover", (e) => e.preventDefault());
+  stageBox.addEventListener("drop", async (e) => {
+    e.preventDefault();
+    const f = e.dataTransfer.files && e.dataTransfer.files[0];
+    if (!f) return;
+    if (!f.type.startsWith("image/")) {
+      setStatus("Please drop an image file");
+      return;
+    }
+    await loadImage(f);
+  });
+
+  // Preview loop
+  let last = performance.now();
+  function loop() {
+    const now = performance.now();
+    const dt = (now - last) / 1000;
+    last = now;
+
+    if (isRunning && !exporting) {
+      remainingSec = Math.max(0, remainingSec - dt);
+      if (remainingSec <= 0) {
+        isRunning = false;
+        startBtn.textContent = "Start";
+      }
+    }
+
+    const text = formatMMSS(remainingSec);
+    timerTextEl.textContent = text;
+    renderFrame(text);
+
+    requestAnimationFrame(loop);
+  }
+
+  // Export real-time
+  async function exportWebMRealTime() {
+    if (exporting) return;
+    if (!bgLoaded || !img) {
+      setStatus("Upload a background image first");
+      return;
+    }
+    if (!("MediaRecorder" in window)) {
+      setStatus("MediaRecorder not supported in this browser");
+      return;
+    }
+
+    exporting = true;
+    isRunning = false;
+    startBtn.textContent = "Start";
+    exportElapsed = 0;
+
+    exportBtn.disabled = true;
+    exportBtn.textContent = "Exporting (real-time)…";
+
+    const total = durationSec;
+    let remain = total;
+    let lastT = performance.now();
+
+    const stream = canvas.captureStream(30);
+    const preferred = ["video/webm;codecs=vp9","video/webm;codecs=vp8","video/webm"];
+    const mimeType = preferred.find(t => MediaRecorder.isTypeSupported(t)) || "";
+
+    const rec = new MediaRecorder(stream, mimeType ? { mimeType } : undefined);
+    const chunks = [];
+
+    rec.ondataavailable = (ev) => { if (ev.data && ev.data.size > 0) chunks.push(ev.data); };
+
+    const done = new Promise((resolve) => {
+      rec.onstop = () => resolve(new Blob(chunks, { type: rec.mimeType || "video/webm" }));
+    });
+
+    rec.start(1000);
+
+    function tick() {
+      const now = performance.now();
+      const dt = (now - lastT) / 1000;
+      lastT = now;
+
+      remain = Math.max(0, remain - dt);
+      exportElapsed = total - remain;
+
+      const text = formatMMSS(remain);
+      renderFrame(text);
+
+      const p = Math.min(1, exportElapsed / Math.max(1, total));
+      barFill.style.width = Math.floor(p * 100) + "%";
+      exportLeft.textContent = `Elapsed: ${formatMMSS(exportElapsed)}`;
+      exportRight.textContent = `Total: ${formatMMSS(total)}`;
+
+      if (remain <= 0) {
+        rec.stop();
+        return;
+      }
+      requestAnimationFrame(tick);
+    }
+    requestAnimationFrame(tick);
+
+    const blob = await done;
+
+    const a = document.createElement("a");
+    const url = URL.createObjectURL(blob);
+    a.href = url;
+    a.download = `TimeApp_${Math.floor(durationSec/60)}min_${anchor}.webm`;
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    URL.revokeObjectURL(url);
+
+    exporting = false;
+    exportBtn.disabled = false;
+    exportBtn.textContent = "Export WebM";
+    barFill.style.width = "0%";
+    exportLeft.textContent = "Ready";
+    exportRight.textContent = "WebM download after finish";
+
+    remainingSec = durationSec;
+    setStatus("Export complete (downloaded)", 2000);
+  }
+
+  exportBtn.addEventListener("click", exportWebMRealTime);
+
+  // Init
+  initFont();
+  syncPills();
+  requestAnimationFrame(loop);
+})();
+</script>
+</body>
+</html>
