@@ -4,6 +4,9 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>TimeApp</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Anton&family=Bebas+Neue&family=Montserrat:wght@900&family=Orbitron:wght@900&family=Oswald:wght@700&family=Poppins:wght@900&family=Righteous&family=Roboto+Mono:wght@700&family=Share+Tech+Mono&family=Space+Mono:wght@700&family=VT323&display=swap" rel="stylesheet">
   <style>
     :root { color-scheme: dark; }
     * { box-sizing: border-box; }
@@ -20,16 +23,14 @@
     .wrap { position: relative; max-width: 1180px; margin: 0 auto; padding: 40px 24px 60px; }
     .header { display:flex; align-items:center; justify-content:space-between; gap: 16px; margin-bottom: 18px; }
     .brand { display:flex; align-items:center; gap: 12px; }
-    .logo { width: 40px; height: 40px; border-radius: 18px; background: rgba(255,255,255,0.10);
+    .logo { 
+      width: 40px; height: 40px; border-radius: 18px; background: rgba(255,255,255,0.10);
       box-shadow: 0 0 0 1px rgba(255,255,255,0.08), 0 20px 80px rgba(0,0,0,0.55);
       border: 1px solid rgba(255,255,255,0.10);
+      display: flex; align-items: center; justify-content: center;
     }
     .title { font-size: 20px; font-weight: 700; letter-spacing: -0.01em; }
     .subtitle { font-size: 13px; color: rgba(255,255,255,0.55); margin-top: 2px; }
-
-    .pill { font-size: 12px; padding: 6px 10px; border-radius: 999px; border: 1px solid rgba(255,255,255,0.14); background: rgba(255,255,255,0.06); color: rgba(255,255,255,0.75); }
-    .pill.ok { background: rgba(16,185,129,0.12); border-color: rgba(16,185,129,0.25); color: rgba(167,243,208,0.95); }
-    .pill.warn { background: rgba(245,158,11,0.12); border-color: rgba(245,158,11,0.25); color: rgba(253,230,138,0.95); }
 
     .grid { display:grid; grid-template-columns: 1.4fr 0.9fr; gap: 18px; }
     @media (max-width: 980px) { .grid { grid-template-columns: 1fr; } }
@@ -47,7 +48,6 @@
     .muted { color: rgba(255,255,255,0.6); font-size: 13px; }
 
     .stageBox { position: relative; border-radius: 18px; overflow: hidden; border: 1px solid rgba(255,255,255,0.10); background: rgba(0,0,0,0.25); }
-    /* Стилі для повного екрану */
     .stageBox:fullscreen { background: #000; display: flex; align-items: center; justify-content: center; border: none; }
     .stageBox:fullscreen .aspect { width: 100vw; height: 100vh; max-width: none; }
 
@@ -129,12 +129,29 @@
     }
     .input:focus { border-color: rgba(255,255,255,0.18); }
 
+    select.input {
+      appearance: none;
+      -webkit-appearance: none;
+      background-image: url("data:image/svg+xml;charset=UTF-8,%3Csvg width='12' height='8' viewBox='0 0 12 8' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M1 1.5L6 6.5L11 1.5' stroke='rgba(255,255,255,0.7)' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+      background-repeat: no-repeat;
+      background-position: right 12px center;
+      padding-right: 36px;
+    }
+    select.input option {
+      background: #0f172a;
+      color: #fff;
+    }
+
     .colorRow { display:flex; align-items:center; gap: 10px; }
     input[type="color"] {
       width: 44px; height: 44px; border-radius: 14px;
       background: transparent; border: 1px solid rgba(255,255,255,0.12);
       padding: 0; cursor:pointer;
+      overflow: hidden;
     }
+    input[type="color"]::-webkit-color-swatch-wrapper { padding: 0; }
+    input[type="color"]::-webkit-color-swatch { border: none; border-radius: 14px; }
+    input[type="color"]::-moz-color-swatch { border: none; border-radius: 14px; }
 
     .posGrid { display:grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
     .posBtn {
@@ -168,13 +185,18 @@
   <div class="wrap">
     <div class="header">
       <div class="brand">
-        <div class="logo"></div>
+        <div class="logo">
+          <!-- Thin and stylish vector clock icon -->
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.9)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="12" cy="12" r="10"></circle>
+            <polyline points="12 6 12 12 16 14"></polyline>
+          </svg>
+        </div>
         <div>
           <div class="title">TimeApp</div>
           <div class="subtitle">Countdown video generator • 1920×1080 • WebM</div>
         </div>
       </div>
-      <div id="fontPill" class="pill">Proxima Nova Black: checking…</div>
     </div>
 
     <div class="grid">
@@ -191,8 +213,8 @@
 
           <div id="dropOverlay" class="drop">
             <div class="dropInner">
-              <div class="dropTitle">Drop your background image here</div>
-              <div class="dropDesc">Or use the Upload button in the panel.</div>
+              <div class="dropTitle">Drop your background image or video here</div>
+              <div class="dropDesc">Or use the Upload button. (Videos .mp4/.webm loop perfectly!)</div>
             </div>
           </div>
         </div>
@@ -214,7 +236,7 @@
         <div class="panel">
           <div class="panelCard">
             <div class="panelTitle">Background</div>
-            <input id="file" type="file" accept="image/*" style="display:none" />
+            <input id="file" type="file" accept="image/*,video/*" style="display:none" />
             <div class="uploadBox" id="uploadBox">Click to upload (or drag & drop on the stage)</div>
             <div class="tinyRow">
               <span>Fit mode: cover</span>
@@ -238,12 +260,44 @@
           </div>
 
           <div class="panelCard">
-            <div class="panelTitle">Timer style</div>
+            <div class="panelTitle">Timer colour</div>
             <div class="colorRow">
               <input type="color" id="color" value="#FFFFFF" />
               <input class="input" id="hex" value="#FFFFFF" />
             </div>
-            <div class="hint">Font: <span style="color:rgba(255,255,255,0.85)">Proxima Nova Black</span> (installed)</div>
+            
+            <div class="panelTitle" style="margin-top: 16px; margin-bottom: 10px;">Timer font</div>
+            <div class="fieldRow" style="margin-top: 0;">
+              <select class="input" id="fontFamily">
+                <optgroup label="Google Fonts">
+                  <option value="Anton">Anton</option>
+                  <option value="Bebas Neue">Bebas Neue</option>
+                  <option value="Montserrat">Montserrat</option>
+                  <option value="Orbitron">Orbitron</option>
+                  <option value="Oswald">Oswald</option>
+                  <option value="Poppins">Poppins</option>
+                  <option value="Righteous">Righteous</option>
+                  <option value="Roboto Mono">Roboto Mono</option>
+                  <option value="Share Tech Mono">Share Tech Mono</option>
+                  <option value="Space Mono">Space Mono</option>
+                  <option value="VT323">VT323</option>
+                </optgroup>
+                <optgroup label="System Fonts">
+                  <option value="system-ui">System Default (system-ui)</option>
+                  <option value="Arial">Arial</option>
+                  <option value="Arial Black">Arial Black</option>
+                  <option value="Comic Sans MS">Comic Sans MS</option>
+                  <option value="Courier New">Courier New</option>
+                  <option value="Georgia">Georgia</option>
+                  <option value="Impact">Impact</option>
+                  <option value="Lucida Console">Lucida Console</option>
+                  <option value="Tahoma">Tahoma</option>
+                  <option value="Times New Roman">Times New Roman</option>
+                  <option value="Trebuchet MS">Trebuchet MS</option>
+                  <option value="Verdana">Verdana</option>
+                </optgroup>
+              </select>
+            </div>
           </div>
 
           <div class="panelCard">
@@ -294,6 +348,7 @@
 
   const colorEl = document.getElementById("color");
   const hexEl = document.getElementById("hex");
+  const fontFamilyEl = document.getElementById("fontFamily");
 
   const customMinEl = document.getElementById("customMin");
   const applyCustomBtn = document.getElementById("applyCustom");
@@ -303,11 +358,7 @@
   const exportLeft = document.getElementById("exportLeft");
   const exportRight = document.getElementById("exportRight");
 
-  const fontPill = document.getElementById("fontPill");
-
-  let fontDetected = false;
-
-  let img = null;
+  let bgMedia = null;
   let bgLoaded = false;
 
   let anchor = "MC"; // TL,TC,TR, ML,MC,MR, BL,BC,BR
@@ -369,9 +420,11 @@
     // background
     ctx.clearRect(0, 0, W, H);
 
-    if (img) {
-      const { x, y, drawW, drawH } = fitCover(img.naturalWidth || img.width, img.naturalHeight || img.height);
-      ctx.drawImage(img, x, y, drawW, drawH);
+    if (bgMedia) {
+      const mw = bgMedia.videoWidth || bgMedia.naturalWidth || bgMedia.width;
+      const mh = bgMedia.videoHeight || bgMedia.naturalHeight || bgMedia.height;
+      const { x, y, drawW, drawH } = fitCover(mw, mh);
+      ctx.drawImage(bgMedia, x, y, drawW, drawH);
     } else {
       const g = ctx.createLinearGradient(0, 0, W, H);
       g.addColorStop(0, "#0B1020");
@@ -386,28 +439,14 @@
     ctx.textAlign = align;
     ctx.textBaseline = baseline;
 
-    const fontStack = fontDetected
-      ? `"Proxima Nova Black","Proxima Nova",system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif`
-      : `system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif`;
+    // Set up user defined font
+    let userFont = fontFamilyEl.value.trim().replace(/['"]/g, '');
+    if (!userFont) userFont = 'system-ui';
 
-    ctx.font = `900 180px ${fontStack}`;
+    ctx.font = `bold 180px "${userFont}", system-ui, -apple-system, sans-serif`;
     ctx.fillStyle = timerColor;
     ctx.fillText(text, x, y);
     ctx.restore();
-  }
-
-  async function detectFont(name) {
-    try {
-      if (document.fonts && document.fonts.ready) await document.fonts.ready;
-      if (document.fonts && document.fonts.check) return document.fonts.check(`80px "${name}"`);
-      return false;
-    } catch { return false; }
-  }
-
-  async function initFont() {
-    fontDetected = await detectFont("Proxima Nova Black");
-    fontPill.textContent = `Proxima Nova Black: ${fontDetected ? "detected" : "not detected"}`;
-    fontPill.className = `pill ${fontDetected ? "ok" : "warn"}`;
   }
 
   // UI: duration pills
@@ -516,18 +555,40 @@
   fileEl.addEventListener("change", async () => {
     const f = fileEl.files && fileEl.files[0];
     if (!f) return;
-    await loadImage(f);
+    await loadMedia(f);
     fileEl.value = "";
   });
 
-  async function loadImage(file) {
+  async function loadMedia(file) {
     const url = URL.createObjectURL(file);
-    const im = new Image();
-    im.crossOrigin = "anonymous";
-    im.src = url;
-    await im.decode();
-    img = im;
-    bgLoaded = true;
+    
+    if (file.type.startsWith("video/")) {
+      const v = document.createElement("video");
+      v.muted = true;
+      v.loop = true;
+      v.playsInline = true;
+      v.crossOrigin = "anonymous";
+      v.src = url;
+      v.load();
+      
+      // Wait for enough data to determine video dimensions
+      await new Promise((resolve, reject) => {
+        v.onloadeddata = () => resolve();
+        v.onerror = () => reject();
+      });
+      
+      v.play(); // Auto-loop the video indefinitely
+      bgMedia = v;
+      bgLoaded = true;
+    } else {
+      const im = new Image();
+      im.crossOrigin = "anonymous";
+      im.src = url;
+      await im.decode();
+      bgMedia = im;
+      bgLoaded = true;
+    }
+    
     bgNameEl.textContent = file.name;
     dropOverlay.style.display = "none";
     setStatus("Background loaded");
@@ -540,11 +601,11 @@
     e.preventDefault();
     const f = e.dataTransfer.files && e.dataTransfer.files[0];
     if (!f) return;
-    if (!f.type.startsWith("image/")) {
-      setStatus("Please drop an image file");
+    if (!f.type.startsWith("image/") && !f.type.startsWith("video/")) {
+      setStatus("Please drop an image or video file");
       return;
     }
-    await loadImage(f);
+    await loadMedia(f);
   });
 
   // Preview loop
@@ -572,8 +633,8 @@
   // Export real-time
   async function exportWebMRealTime() {
     if (exporting) return;
-    if (!bgLoaded || !img) {
-      setStatus("Upload a background image first");
+    if (!bgLoaded || !bgMedia) {
+      setStatus("Upload a background media first");
       return;
     }
     if (!("MediaRecorder" in window)) {
@@ -657,7 +718,6 @@
   exportBtn.addEventListener("click", exportWebMRealTime);
 
   // Init
-  initFont();
   syncPills();
   requestAnimationFrame(loop);
 })();
